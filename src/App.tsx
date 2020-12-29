@@ -3,6 +3,7 @@ import './App.css';
 import Todolist, {TaskType} from "./Todolist";
 import {v1} from 'uuid';
 import {AddItemForm} from "./AddItemForm";
+import {Container, Grid} from "@material-ui/core";
 
 export type FilterValuesType = "all" | "active" | "completed"
 type TodolistType = {
@@ -45,7 +46,7 @@ function App() {
             filter: "all",
             title: todoListTitle
         };
-        setTodolists([todolist, ...todolists]);
+        setTodolists([...todolists, todolist]);
         setTasks({
             ...tasksObj,
             [todolist.id]: []
@@ -60,7 +61,6 @@ function App() {
     }
 
     function addTask(title: string, tlId: string) {
-        debugger;
         let task = {id: v1(), title: title, isDone: false}
         let tasks = tasksObj[tlId]
         let newTasks = [task, ...tasks]
@@ -110,8 +110,11 @@ function App() {
 
 
     return (
-        <div className="App">
-            <AddItemForm addItem={addTodolist} />
+        <Container fixed>
+            <Grid container spacing={6} style={{margin: "20px 0"}}>
+                <AddItemForm addItem={addTodolist} />
+            </Grid>
+            <Grid container spacing={6}>
             {
                 todolists.map((tl) => {
 
@@ -140,8 +143,8 @@ function App() {
                     />
                 })
             }
-
-        </div>
+            </Grid>
+        </Container>
     );
 }
 
