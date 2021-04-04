@@ -4,6 +4,7 @@ import {TextField} from "@material-ui/core";
 type EditableSpanPropsType = {
     title: string
     onChange : (title:string)=>void
+    className : string
 }
 
 

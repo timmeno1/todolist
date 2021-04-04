@@ -13,27 +13,42 @@ import {
     Typography
 } from "@material-ui/core";
 import {Delete} from "@material-ui/icons";
+import {
+    addTaskAC,
+    changeTaskStatusAC,
+    removeTaskAC,
+    TaskType,
+    updateTaskTitleAC
+} from "./state/tasks-reducer";
+import {useDispatch, useSelector} from "react-redux";
+import {AppRootState} from "./state/store";
 
-export type TaskType = {
-    id : string,
-    title : string,
-    isDone : boolean
-}
+
 type PropsType = {
     id:string
-    title:string,
-    tasks: Array<TaskType>
-    removeTask: (taskId: string, tlId:string) => void
+    title:string
     changeFilter: (value: FilterValuesType, tlId:string) => void
-    addTask: (title:string, tlId:string) => void
-    changeStatus : (id:string, isDone: boolean, tlId:string) => void
-    changeTaskTitle : (id:string, newValue: string, tlId:string) => void
     filter: FilterValuesType
     removeTodoList : (tlId: string) => void
     changeTodoListTitle : (tlId: string, title:string) => void
 }
 
 const Todolist = (props: PropsType) => {
+
+    const dispatch = useDispatch()
+    const tasks = useSelector<AppRootState, Array<TaskType>>(state => state.tasks[props.id])
+
+    let filterTasks = (filter:FilterValuesType) =>{
+        switch (filter) {
+
+            case "active":
+                return tasks.filter(t => !t.isDone);
+            case "completed":
+                return tasks.filter(t => t.isDone);
+            default:
+                return tasks
+        }
+    }
 
     const onAllClickHandler = () => {
         props.changeFilter("all",props.id)
@@ -44,6 +59,7 @@ const Todolist = (props: PropsType) => {
     const onCompleteClickHandler = () => {
         props.changeFilter("completed",props.id)
     }
+
     const removeTodoList = () => {
         props.removeTodoList(props.id)
     }
@@ -51,13 +67,13 @@ const Todolist = (props: PropsType) => {
         props.changeTodoListTitle(props.id,title)
     }
     const addTask = (title:string) => {
-        props.addTask(title, props.id)
+        dispatch(addTaskAC(props.id, title))
     }
 
     return (
         <Grid item xs={4}>
             <Typography variant={"h5"}>
-                <EditableSpan title={props.title} onChange={changeTodoListTitle} />
+                <EditableSpan title={props.title} onChange={changeTodoListTitle} className={""}/>
                 <IconButton color={"default"} onClick={removeTodoList}>
                     <Delete />
                 </IconButton>
@@ -66,16 +82,18 @@ const Todolist = (props: PropsType) => {
 
             <List>
                 {
-                    props.tasks.map(t => {
+                    filterTasks(props.filter).map(t => {
+                        debugger
                         const onChangeStatusHandler = (e:ChangeEvent<HTMLInputElement>) => {
                             let newIsDoneValue = e.currentTarget.checked
-                            props.changeStatus(t.id,newIsDoneValue, props.id)
+                            dispatch(changeTaskStatusAC(props.id, t.id, newIsDoneValue))
                         }
                         const onChangeTitleHandler = (newValue:string) => {
-                            props.changeTaskTitle(t.id, newValue, props.id)
+                            dispatch(updateTaskTitleAC(props.id, t.id, newValue))
                         }
 
-                        const removeTask = ()=> { props.removeTask(t.id, props.id) }
+                        const removeTask = ()=> { dispatch(removeTaskAC(props.id,t.id)) }
+
                         return <ListItem key={t.id} className={t.isDone ? "is-done" : ""}>
                             <Checkbox
                                 edge="start"
@@ -84,7 +102,7 @@ const Todolist = (props: PropsType) => {
                                 tabIndex={-1}
                                 disableRipple
                             />
-                            <EditableSpan title={t.title} onChange={onChangeTitleHandler}/>
+                            <EditableSpan title={t.title} onChange={onChangeTitleHandler} className={t.isDone ? "is-done" : ""}/>
                             <ListItemSecondaryAction>
                                 <IconButton edge={"end"} color={"default"} onClick={removeTask}>
                                     <Delete />

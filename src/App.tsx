@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import './App.css';
-import Todolist, {TaskType} from "./Todolist";
+import Todolist from "./Todolist";
 import {v1} from 'uuid';
 import {AddItemForm} from "./AddItemForm";
 import {Container, Grid} from "@material-ui/core";
+import {TaskType} from "./state/tasks-reducer";
 
 export type FilterValuesType = "all" | "active" | "completed"
 type TodolistType = {
@@ -52,6 +53,21 @@ function App() {
             [todolist.id]: []
         })
     }
+    function removeTodoList(tlId:string) {
+        let filteredTL = todolists.filter( tl => tl.id !== tlId)
+        setTodolists(filteredTL)
+
+        delete tasksObj[tlId]
+        setTasks({...tasksObj})
+    }
+    function changeTodoListTitle(tlId:string,title:string) {
+        let todoList = todolists.find( tl => tl.id === tlId)
+        if(todoList) {
+            todoList.title = title;
+            setTodolists([...todolists])
+        }
+    }
+
 
     function removeTask(id: string, tlId: string) {
         let tasks = tasksObj[tlId];
@@ -93,21 +109,6 @@ function App() {
         }
     }
 
-    function removeTodoList(tlId:string) {
-        let filteredTL = todolists.filter( tl => tl.id !== tlId)
-        setTodolists(filteredTL)
-
-        delete tasksObj[tlId]
-        setTasks({...tasksObj})
-    }
-    function changeTodoListTitle(tlId:string,title:string) {
-        let todoList = todolists.find( tl => tl.id === tlId)
-        if(todoList) {
-            todoList.title = title;
-            setTodolists([...todolists])
-        }
-    }
-
 
     return (
         <Container fixed>
@@ -127,16 +128,15 @@ function App() {
                         tasksForTodolist = tasksForTodolist.filter(t => t.isDone === true);
                     }
 
-
                     return <Todolist
                         id={tl.id}
                         title={tl.title}
-                        tasks={tasksForTodolist}
-                        removeTask={removeTask}
+                        // tasks={tasksForTodolist}
+                        // removeTask={removeTask}
                         changeFilter={changeFilter}
-                        addTask={addTask}
-                        changeStatus={changeStatus}
-                        changeTaskTitle={changeTaskTitle}
+                        // addTask={addTask}
+                        // changeStatus={changeStatus}
+                        // changeTaskTitle={changeTaskTitle}
                         filter={tl.filter}
                         removeTodoList={removeTodoList}
                         changeTodoListTitle={changeTodoListTitle}
