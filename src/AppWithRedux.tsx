@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import './App.css';
 import Todolist from "./Todolist";
 import {AddItemForm} from "./AddItemForm";
@@ -17,24 +17,41 @@ export type FilterValuesType = "all" | "active" | "completed"
 
 function AppWithRedux() {
 
+
+    
     const dispatch = useDispatch()
     const todolists = useSelector<AppRootState, Array<TodolistType>>(state => state.todolists)
 
 
-    function addTodolist(todoListTitle:string){
-        const action = addTodoListAC(todoListTitle)
-        dispatch(action);
-    }
-    function removeTodoList(tlId:string) {
-        dispatch(removeTodoListAC(tlId));
-    }
-    function changeTodoListTitle(tlId:string,title:string) {
-        dispatch(updateTodoListTitleAC(tlId, title))
-    }
-    function changeFilter(value: FilterValuesType, tlId: string) {
-        const action = updateTodoListFilterAC(tlId, value)
-        dispatch(action)
-    }
+    const addTodolist = useCallback(
+        (todoListTitle:string) => {
+            const action = addTodoListAC(todoListTitle)
+            dispatch(action);
+        },
+        [dispatch]
+    )
+
+    const removeTodoList = useCallback(
+        (tlId:string) => {
+            dispatch(removeTodoListAC(tlId));
+        },
+        [dispatch],
+    )
+
+    const changeTodoListTitle = useCallback(
+        (tlId:string,title:string) => {
+            dispatch(updateTodoListTitleAC(tlId, title))
+        },
+        [dispatch]
+    )
+
+    const changeFilter = useCallback(
+        (value: FilterValuesType, tlId: string) => {
+            const action = updateTodoListFilterAC(tlId, value)
+            dispatch(action)
+        },
+        [dispatch]
+    )
 
 
     return (
@@ -53,6 +70,7 @@ function AppWithRedux() {
                         filter={tl.filter}
                         removeTodoList={removeTodoList}
                         changeTodoListTitle={changeTodoListTitle}
+                        key={tl.id}
                     />
                 })
             }

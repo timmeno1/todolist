@@ -55,12 +55,14 @@ export const todoListReducer = (state:Array<TodolistType> = initialState, action
         }
 
         case UPDATE_TODOLIST_TITLE: {
-            let tl = state.find(tl => tl.id === action.id)
-            if(tl) {
-                tl.title = action.title
-            }
+            let tl = state.map(tl => {
+                if(tl.id === action.id) {
+                    return {...tl, title: action.title}
+                }
+                return tl
+            })
             return [
-                ...state
+                ...tl
             ]
         }
 

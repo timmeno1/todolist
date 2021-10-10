@@ -1,32 +1,45 @@
-import React, {ChangeEvent, KeyboardEvent, useState} from "react";
+import React, {ChangeEvent, KeyboardEvent, useCallback, useState} from "react";
 import { IconButton, TextField} from "@material-ui/core";
 import {AddCircleOutline} from "@material-ui/icons";
 
 type addItemFormPropsType = {
     addItem: (newTaskTitle: string) => void
 }
-export const AddItemForm = (props: addItemFormPropsType) => {
+export const AddItemForm = React.memo((props: addItemFormPropsType) => {
 
-    let [error, setError] = useState<string | null>(null)
-    let [newTaskTitle, setNewTaskTitle] = useState("")
+    const [error, setError] = useState<string | null>(null)
+    const [newTaskTitle, setNewTaskTitle] = useState("")
 
-    const setNewTaskTitleHandler = (e: ChangeEvent<HTMLInputElement>) => {
-        setError(null)
-        setNewTaskTitle(e.currentTarget.value)
-    }
-    const onKeyPressHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.charCode === 13) {
-            setTask()
-        }
-    }
-    const setTask = () => {
-        if (newTaskTitle.trim() !== "") {
-            props.addItem(newTaskTitle)
-            setNewTaskTitle("")
-        } else {
-            setError("Title is required!")
-        }
-    }
+    const setNewTaskTitleHandler = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            if(error !== null) {
+                setError(null)
+            }
+            setNewTaskTitle(e.currentTarget.value)
+        },
+        [error]
+    )
+
+    const setTask = useCallback(
+        () => {
+            if (newTaskTitle.trim() !== "") {
+                props.addItem(newTaskTitle)
+                setNewTaskTitle("")
+            } else {
+                setError("Title is required!")
+            }
+        },
+        [props, newTaskTitle]
+    )
+
+    const onKeyPressHandler = useCallback(
+        (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.charCode === 13) {
+                setTask()
+            }
+        },
+        [setTask]
+    )
 
     return (
         <div>
@@ -44,4 +57,4 @@ export const AddItemForm = (props: addItemFormPropsType) => {
                 </IconButton>
         </div>
     )
-}
+})

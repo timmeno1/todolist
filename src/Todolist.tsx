@@ -1,27 +1,22 @@
-import React, {ChangeEvent} from "react";
+import React, {useCallback} from "react";
 import {FilterValuesType} from "./App";
 import {AddItemForm} from "./AddItemForm";
 import {EditableSpan} from "./EditableSpan";
 import {
     Button,
-    Checkbox,
     Grid,
     IconButton,
     List,
-    ListItem,
-    ListItemSecondaryAction,
     Typography
 } from "@material-ui/core";
 import {Delete} from "@material-ui/icons";
 import {
     addTaskAC,
-    changeTaskStatusAC,
-    removeTaskAC,
-    TaskType,
-    updateTaskTitleAC
+    TaskType
 } from "./state/tasks-reducer";
 import {useDispatch, useSelector} from "react-redux";
 import {AppRootState} from "./state/store";
+import { Task } from "./Task";
 
 
 type PropsType = {
@@ -33,7 +28,8 @@ type PropsType = {
     changeTodoListTitle : (tlId: string, title:string) => void
 }
 
-const Todolist = (props: PropsType) => {
+const Todolist = React.memo((props: PropsType) => {
+
 
     const dispatch = useDispatch()
     const tasks = useSelector<AppRootState, Array<TaskType>>(state => state.tasks[props.id])
@@ -50,25 +46,46 @@ const Todolist = (props: PropsType) => {
         }
     }
 
-    const onAllClickHandler = () => {
-        props.changeFilter("all",props.id)
-    }
-    const onActiveClickHandler = () => {
-        props.changeFilter("active",props.id)
-    }
-    const onCompleteClickHandler = () => {
-        props.changeFilter("completed",props.id)
-    }
+    const onAllClickHandler = useCallback(
+        () => {
+            props.changeFilter("all",props.id)
+        },
+        [props]
+    )
 
-    const removeTodoList = () => {
-        props.removeTodoList(props.id)
-    }
-    const changeTodoListTitle = (title:string) => {
-        props.changeTodoListTitle(props.id,title)
-    }
-    const addTask = (title:string) => {
-        dispatch(addTaskAC(props.id, title))
-    }
+    const onActiveClickHandler = useCallback(
+        () => {
+            props.changeFilter("active",props.id)
+        },
+        [props]
+    )
+    const onCompleteClickHandler = useCallback(
+        () => {
+            props.changeFilter("completed",props.id)
+        },
+        [props]
+    )
+
+    const removeTodoList = useCallback(
+        () => {
+            props.removeTodoList(props.id)
+        },
+        [props]
+    )
+
+    const changeTodoListTitle = useCallback(
+        (title:string) => {
+            props.changeTodoListTitle(props.id,title)
+        },
+        [props.id, props.changeTodoListTitle]
+    )
+
+    const addTask = useCallback(
+        (title:string) => {
+            dispatch(addTaskAC(props.id, title))
+        },
+        [dispatch, props.id]
+    )
 
     return (
         <Grid item xs={4}>
@@ -83,32 +100,8 @@ const Todolist = (props: PropsType) => {
             <List>
                 {
                     filterTasks(props.filter).map(t => {
-                        debugger
-                        const onChangeStatusHandler = (e:ChangeEvent<HTMLInputElement>) => {
-                            let newIsDoneValue = e.currentTarget.checked
-                            dispatch(changeTaskStatusAC(props.id, t.id, newIsDoneValue))
-                        }
-                        const onChangeTitleHandler = (newValue:string) => {
-                            dispatch(updateTaskTitleAC(props.id, t.id, newValue))
-                        }
 
-                        const removeTask = ()=> { dispatch(removeTaskAC(props.id,t.id)) }
-
-                        return <ListItem key={t.id} className={t.isDone ? "is-done" : ""}>
-                            <Checkbox
-                                edge="start"
-                                checked={t.isDone}
-                                onChange={ onChangeStatusHandler }
-                                tabIndex={-1}
-                                disableRipple
-                            />
-                            <EditableSpan title={t.title} onChange={onChangeTitleHandler} className={t.isDone ? "is-done" : ""}/>
-                            <ListItemSecondaryAction>
-                                <IconButton edge={"end"} color={"default"} onClick={removeTask}>
-                                    <Delete />
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItem>
+                        return <Task todolistId={props.id} id={t.id} title={t.title} isDone={t.isDone} />
                     })
                 }
             </List>
@@ -122,7 +115,9 @@ const Todolist = (props: PropsType) => {
             </div>
         </Grid>
     )
-}
+})
+
+
 
 
 export default Todolist;
